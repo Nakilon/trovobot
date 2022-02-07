@@ -72,8 +72,8 @@ module TrovoBot
   end.abort_on_exception = true
 
   def self.start
-    puts "admin -- #{ARGV[0]}"
-    puts "channel -- #{ARGV[1]}"
+    puts "admin -- #{ARGV[0] || fail}"
+    puts "channel -- #{ARGV[1] || fail}"
     require "async/websocket/client"
     require "async/http/endpoint"
     Async do |task|
