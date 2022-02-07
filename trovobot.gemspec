@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name         = "trovobot"
-  spec.version      = "0.0.0"
+  spec.version      = "0.0.1"
   spec.summary      = "Trovo Live API library"
 
   spec.author       = "Victor Maslov aka Nakilon"
@@ -9,6 +9,10 @@ Gem::Specification.new do |spec|
   spec.metadata     = {"source_code_uri" => "https://github.com/nakilon/trovobot"}
 
   spec.required_ruby_version = ">=3"
+
+  spec.add_dependency "nethttputils", "~>0.4.3.2"
+  spec.add_dependency "async-http"
+  spec.add_dependency "async-websocket"
 
   spec.files        = %w{ LICENSE trovobot.gemspec lib/trovobot.rb }
 end
