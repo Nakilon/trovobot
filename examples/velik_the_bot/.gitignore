@@ -2,3 +2,8 @@
 /clientsecret
 /auth_code
 /tokens.json
+/*.channel.json
+/*.channel_code
+
+/db.yaml
+/processed.jsonl
