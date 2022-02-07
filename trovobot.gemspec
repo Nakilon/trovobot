@@ -8,5 +8,7 @@ Gem::Specification.new do |spec|
   spec.license      = "MIT"
   spec.metadata     = {"source_code_uri" => "https://github.com/nakilon/trovobot"}
 
+  spec.required_ruby_version = ">=3"
+
   spec.files        = %w{ LICENSE trovobot.gemspec lib/trovobot.rb }
 end
