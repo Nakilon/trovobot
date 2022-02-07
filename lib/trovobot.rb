@@ -62,16 +62,16 @@ module TrovoBot
     attr_accessor :queue
   end
   self.queue = Queue.new
-  Thread.new do
-    loop do
-      content, channel_id = queue.pop
-      fail unless channel_id  # omitting (for sending to own channel) isn't implemented yet
-      pp TrovoBot::request "chat/send", {content: content, channel_id: channel_id}
-      sleep 1
-    end
-  end.abort_on_exception = true
 
   def self.start
+    Thread.new do
+      loop do
+        content, channel_id = queue.pop
+        fail unless channel_id  # omitting (for sending to own channel) isn't implemented yet
+        pp request "chat/send", {content: content, channel_id: channel_id}
+        sleep 1
+      end
+    end.abort_on_exception = true
     puts "admin -- #{ARGV[0] || fail}"
     puts "channel -- #{ARGV[1] || fail}"
     require "async/websocket/client"
@@ -118,7 +118,7 @@ module TrovoBot
               yield msg, channel_id
             rescue
               puts $!.full_message
-              TrovoBot::queue.push ["error at #{ARGV[1]}: #{$!}, #{$!.backtrace.first}", name_to_id(ARGV[0])]
+              queue.push ["error at #{ARGV[1]}: #{$!}, #{$!.backtrace.first}", name_to_id(ARGV[0])]
             else
               File.open("processed.jsonl", "a"){ |_| _.puts msg.fetch :message_id }
             end

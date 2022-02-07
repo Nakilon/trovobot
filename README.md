@@ -1,8 +1,8 @@
-# Trovo Live API library (bot)
+# Trovo Live API client + chat bot
 
 ## What
 
-This is going to be the first Ruby gem for Trovo Live. It's my first Async gem experience so it might be a mess.
+This is going to be the first Ruby gem for Trovo Live. It's my first Async gem experience so it ~~might be~~ is a mess.
 
 I use it for my chat bot https://trovo.live/velik_the_bot -- see the `examples` folder.
 
