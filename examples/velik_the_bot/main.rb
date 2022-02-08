@@ -6,7 +6,7 @@ require "yaml/store"
 db = YAML::Store.new "db.yaml"
 get_level = lambda do |sender_id, channel_id|
   next "8_owner" if sender_id == channel_id
-  next "9_admin" if sender_id == TrovoBot::name_to_id(ARGV[0])
+  next "9_admin" if sender_id == TrovoBot.name_to_id(TrovoBot.admin_name)
   db.transaction(true){ |tr| tr.fetch "access.quote.#{channel_id}.#{sender_id}", "0_query" }
 end
 

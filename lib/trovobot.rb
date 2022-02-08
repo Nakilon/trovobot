@@ -60,6 +60,8 @@ module TrovoBot
 
   class << self
     attr_accessor :queue
+    attr_reader :admin_name
+    attr_reader :channel_name
   end
   self.queue = Queue.new
 
@@ -72,8 +74,8 @@ module TrovoBot
         sleep 1
       end
     end.abort_on_exception = true
-    puts "admin -- #{ARGV[0] || fail}"
-    puts "channel -- #{ARGV[1] || fail}"
+    puts "admin -- #{@admin_name = ARGV[0] || fail}"
+    puts "channel -- #{@channel_name = ARGV[1] || fail}"
     require "async/websocket/client"
     require "async/http/endpoint"
     Async do |task|

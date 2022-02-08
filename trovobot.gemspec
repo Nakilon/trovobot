@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name         = "trovobot"
-  spec.version      = "0.1.1"
+  spec.version      = "0.1.2"
   spec.summary      = "Trovo Live API client"
 
   spec.author       = "Victor Maslov aka Nakilon"
