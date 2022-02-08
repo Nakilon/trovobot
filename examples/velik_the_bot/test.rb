@@ -26,7 +26,7 @@ describe "" do
     TrovoBot.stub :name_to_id, ->_{_} do
     TrovoBot.stub :admin_name, "admin" do
     TrovoBot.stub :channel_name, "owner" do
-      b ["\\access quote"], ["'s current access level: 8_owner"], "owner"
+      b ["\\access quote"], ["'s current access level: 8_owner"]
       b ["\\access quote"], ["'s current access level: 9_admin"], "admin"
       b ["\\access quote"], ["'s current access level: 0_query"], "someone"
       b ["\\access quote owner"], ["owner's current access level: 8_owner"]
@@ -54,6 +54,32 @@ describe "" do
         "someone's new access level: 0_query",
         "someone's current access level: 0_query",
       ]
+      b [
+        "\\access quote someone",
+        "\\access quote someone +",
+        "\\access quote someone",
+        "\\access quote someone -",
+        "\\access quote someone",
+      ], [
+        "someone's current access level: 0_query",
+        "access denied",
+        "someone's current access level: 0_query",
+        "access denied",
+        "someone's current access level: 0_query",
+      ], "someone"
+      b [
+        "\\access quote someone",
+        "\\access quote someone +",
+        "\\access quote someone",
+        "\\access quote someone -",
+        "\\access quote someone",
+      ], [
+        "someone's current access level: 0_query",
+        "someone's new access level: 1_add",
+        "someone's current access level: 1_add",
+        "someone's new access level: 0_query",
+        "someone's current access level: 0_query",
+      ], "admin"
     end
     end
     end
