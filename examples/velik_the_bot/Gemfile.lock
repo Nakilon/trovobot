@@ -40,7 +40,7 @@ GEM
       protocol-http1 (~> 0.2)
     public_suffix (4.0.6)
     timers (4.3.3)
-    trovobot (0.0.1)
+    trovobot (0.1.1)
       async-http
       async-websocket
       nethttputils (~> 0.4.3.2)
