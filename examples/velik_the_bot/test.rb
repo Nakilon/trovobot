@@ -6,6 +6,7 @@ Async = nil
 Sync = nil
 
 require "minitest/mock"
+require "minitest/around/spec"
 require "minitest/autorun"
 describe "" do
 
@@ -22,10 +23,18 @@ describe "" do
     b ["ping"], ["pong"]
   end
 
-  it "\\access quote get" do
-    TrovoBot.stub :name_to_id, ->_{_} do
-    TrovoBot.stub :admin_name, "admin" do
-    TrovoBot.stub :channel_name, "owner" do
+  describe "\\access and \\quote" do
+    around do |test|
+      TrovoBot.stub :name_to_id, ->_{_} do
+      TrovoBot.stub :admin_name, "admin" do
+      TrovoBot.stub :channel_name, "owner" do
+        test.call
+      end
+      end
+      end
+    end
+
+    it "\\access quote get" do
       b ["\\access quote"], ["'s current access level: 8_owner"]
       b ["\\access quote"], ["'s current access level: 9_admin"], "admin"
       b ["\\access quote"], ["'s current access level: 0_query"], "someone"
@@ -33,13 +42,7 @@ describe "" do
       b ["\\access quote admin"], ["admin's current access level: 9_admin"]
       b ["\\access quote someone"], ["someone's current access level: 0_query"]
     end
-    end
-    end
-  end
-  it "\\access quote set" do
-    TrovoBot.stub :name_to_id, ->_{_} do
-    TrovoBot.stub :admin_name, "admin" do
-    TrovoBot.stub :channel_name, "owner" do
+    it "\\access quote set" do
       File.write "db.yaml", YAML.dump({})
       b [
         "\\access quote someone",
@@ -81,8 +84,11 @@ describe "" do
         "someone's current access level: 0_query",
       ], "admin"
     end
+
+    it "\\quote" do
+
     end
-    end
+
   end
 
 end
