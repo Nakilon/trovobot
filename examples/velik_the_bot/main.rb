@@ -89,9 +89,10 @@ TrovoBot.start do |chat, channel_id|   # this is designed for a multichannel bot
         when /\A\\q(?:uote)?\s+del\s+(\d+)\z/
           i = $1
           next TrovoBot::queue.push ["access denied", channel_id] unless "1" <= get_level[chat[:sender_id], channel_id]
+          level = get_level[chat[:sender_id], channel_id]
           result = db.transaction do |tr|
             next "quote ##{i} not found" unless quote = tr[root = "quote.#{channel_id}.#{i}"]
-            next "access denied" unless chat[:sender_id] == quote[:author] || "8" <= get_level[chat[:sender_id], channel_id]
+            next "access denied" unless chat[:sender_id] == quote[:author] || "8" <= level
             tr[root] = nil  # the number should be reserved forever
             "quote ##{i} deleted"
           end

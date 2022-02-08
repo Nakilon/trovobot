@@ -34,6 +34,8 @@ describe "" do
       end
     end
 
+    # TODO: maybe not File.write the db but File.delete?
+
     it "\\access quote get" do
       b ["\\access quote"], ["'s current access level: 8_owner"]
       b ["\\access quote"], ["'s current access level: 9_admin"], "admin"
@@ -86,7 +88,90 @@ describe "" do
     end
 
     it "\\quote" do
-
+      [nil, "admin"].each do |who|
+        File.write "db.yaml", YAML.dump({})
+        b [
+          "\\quote",
+          "\\quote 0",
+          "\\quote 1",
+          "\\quote quote",
+          "\\quote search hello",
+          "\\quote add hello world",
+          "\\quote",
+          "\\quote 0",
+          "\\quote 1",
+          "\\quote 2",
+          "\\quote quote",
+          "\\quote search hello",
+          "\\quote add hello world",
+          "\\quote 2",
+          "\\quote 3",
+          "\\quote quote",
+          "\\quote search hello",
+          "\\quote del 0",
+          "\\quote del hello",
+          "\\quote del 1",
+          "\\quote 1",
+          "\\quote search hello",
+          "\\quote add hello world",
+        ], [
+          "no quotes yet, go ahead and use '\\quote add <text>' to add some!",
+          "quote #0 not found",
+          "quote #1 not found",
+          "nothing found",
+          "quote #1 added",
+          "#1: hello world",
+          "quote #0 not found",
+          "#1: hello world",
+          "quote #2 not found",
+          "#1: hello world",
+          "quote #2 added",
+          "#2: hello world",
+          "quote #3 not found",
+          "2 matches",
+          "quote #0 not found",
+          "quote #1 deleted",
+          "quote #1 not found",
+          "#2: hello world",
+          "quote #3 added",
+        ], *who
+      end
+      b [
+        "\\quote 2",
+        "\\quote add hello world",
+        "\\quote 4",
+        "\\quote del 3",
+      ], [
+        "#2: hello world",
+        "access denied",
+        "quote #4 not found",
+        "access denied",
+      ], "someone"
+      b ["\\access quote someone +"], ["someone's new access level: 1_add"]
+      b [
+        "\\quote add hello world",
+        "\\quote 4",
+        "\\quote del 3",
+        "\\quote del 4",
+        "\\quote 4",
+        "\\quote add hello world",
+      ], [
+        "quote #4 added",
+        "#4: hello world",
+        "access denied",
+        "quote #4 deleted",
+        "quote #4 not found",
+        "quote #5 added",
+      ], "someone"
+      b ["\\access quote someone -"], ["someone's new access level: 0_query"]
+      b [
+        "\\quote add hello world",
+        "\\quote del 5",
+      ], [
+        "access denied",
+        "access denied",
+      ], "someone"
+      b ["\\quote del 5"], ["quote #5 deleted"]
     end
 
   end
