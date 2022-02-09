@@ -41,9 +41,13 @@ describe "" do
       b [["\\access quote", "'s current access level: 8_owner"]]
       b [["\\access quote", "'s current access level: 9_admin"]], "admin"
       b [["\\access quote", "'s current access level: 0_query"]], "someone"
-      b [["\\access quote owner", "owner's current access level: 8_owner"]]
-      b [["\\access quote admin", "admin's current access level: 9_admin"]]
-      b [["\\access quote someone", "someone's current access level: 0_query"]]
+      [nil, "admin", "someone"].each do |who|
+        b [
+          ["\\access quote owner", "owner's current access level: 8_owner"],
+          ["\\access quote admin", "admin's current access level: 9_admin"],
+          ["\\access quote someone", "someone's current access level: 0_query"],
+        ], *who
+      end
     end
     it "\\access quote set" do
       File.write "db.yaml", YAML.dump({})
@@ -59,7 +63,6 @@ describe "" do
         ["\\access quote someone +", "access denied"],
         ["\\access quote someone", "someone's current access level: 0_query"],
         ["\\access quote someone -", "access denied"],
-        ["\\access quote someone", "someone's current access level: 0_query"],
       ], "someone"
       b [
         ["\\access quote someone", "someone's current access level: 0_query"],
@@ -67,7 +70,12 @@ describe "" do
         ["\\access quote someone", "someone's current access level: 1_add"],
         ["\\access quote someone -", "someone's new access level: 0_query"],
         ["\\access quote someone", "someone's current access level: 0_query"],
+        ["\\access quote someone +", "someone's new access level: 1_add"],
       ], "admin"
+      b [
+        ["\\access quote someone -", "access denied"],
+        ["\\access quote", "'s current access level: 1_add"],
+      ], "someone"
     end
 
     it "\\quote" do
