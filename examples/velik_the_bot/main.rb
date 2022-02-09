@@ -4,9 +4,10 @@ require "trovobot"
 
 require "yaml/store"
 db = YAML::Store.new "db.yaml"
-get_level = lambda do |sender_id, channel_id|
+get_level = lambda do |sender_id, channel_id, tr = nil|
   next "8_owner" if sender_id == channel_id
   next "9_admin" if sender_id == TrovoBot.name_to_id(TrovoBot.admin_name)
+  next tr.fetch "access.quote.#{channel_id}.#{sender_id}", "0_query" if tr
   db.transaction(true){ |tr| tr.fetch "access.quote.#{channel_id}.#{sender_id}", "0_query" }
 end
 
@@ -89,10 +90,9 @@ TrovoBot.start do |chat, channel_id|   # this is designed for a multichannel bot
         when /\A\\q(?:uote)?\s+del\s+(\d+)\z/
           i = $1
           next TrovoBot::queue.push ["access denied", channel_id] unless "1" <= get_level[chat[:sender_id], channel_id]
-          level = get_level[chat[:sender_id], channel_id]
           result = db.transaction do |tr|
             next "quote ##{i} not found" unless quote = tr[root = "quote.#{channel_id}.#{i}"]
-            next "access denied" unless chat[:sender_id] == quote[:author] || "8" <= level
+            next "access denied" unless chat[:sender_id] == quote[:author] || "8" <= get_level[chat[:sender_id], channel_id, tr]
             tr[root] = nil  # the number should be reserved forever
             "quote ##{i} deleted"
           end
