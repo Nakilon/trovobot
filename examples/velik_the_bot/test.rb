@@ -24,11 +24,14 @@ describe "" do
     b [["ping", "pong"]]
   end
 
+  # TODO: test cmd aliases
+
   describe "\\access and \\quote" do
     around do |test|
       TrovoBot.stub :name_to_id, ->_{_} do
       TrovoBot.stub :admin_name, "admin" do
       TrovoBot.stub :channel_name, "owner" do
+        File.write "db.yaml", YAML.dump({})
         test.call
       end
       end
@@ -54,7 +57,6 @@ describe "" do
         end
       end
       it "\\access #{cmd} set" do
-        File.write "db.yaml", YAML.dump({})
         b [
           ["\\access #{cmd} someone", "someone's current \\#{cmd} access level: 0 (#{l0})"],
           ["\\access #{cmd} someone +", "someone's new \\#{cmd} access level: 1 (#{l1})"],
