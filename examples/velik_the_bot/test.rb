@@ -37,45 +37,50 @@ describe "" do
 
     # TODO: maybe not File.write the db but File.delete?
 
-    it "\\access quote get" do
-      b [["\\access quote", "'s current access level: 8_owner"]]
-      b [["\\access quote", "'s current access level: 9_admin"]], "admin"
-      b [["\\access quote", "'s current access level: 0_query"]], "someone"
-      [nil, "admin", "someone"].each do |who|
-        b [
-          ["\\access quote owner", "owner's current access level: 8_owner"],
-          ["\\access quote admin", "admin's current access level: 9_admin"],
-          ["\\access quote someone", "someone's current access level: 0_query"],
-        ], *who
+    [
+      ["quote", "query", "add"],
+      ["bet", "participate", "initiate"],
+    ].each do |cmd, l0, l1|
+      it "\\access #{cmd} get" do
+        b [["\\access #{cmd}", "'s current access level: 8 (owner)"]]
+        b [["\\access #{cmd}", "'s current access level: 9 (admin)"]], "admin"
+        b [["\\access #{cmd}", "'s current access level: 0 (#{l0})"]], "someone"
+        [nil, "admin", "someone"].each do |who|
+          b [
+            ["\\access #{cmd} owner", "owner's current access level: 8 (owner)"],
+            ["\\access #{cmd} admin", "admin's current access level: 9 (admin)"],
+            ["\\access #{cmd} someone", "someone's current access level: 0 (#{l0})"],
+          ], *who
+        end
       end
-    end
-    it "\\access quote set" do
-      File.write "db.yaml", YAML.dump({})
-      b [
-        ["\\access quote someone", "someone's current access level: 0_query"],
-        ["\\access quote someone +", "someone's new access level: 1_add"],
-        ["\\access quote someone", "someone's current access level: 1_add"],
-        ["\\access quote someone -", "someone's new access level: 0_query"],
-        ["\\access quote someone", "someone's current access level: 0_query"],
-      ]
-      b [
-        ["\\access quote someone", "someone's current access level: 0_query"],
-        ["\\access quote someone +", "access denied"],
-        ["\\access quote someone", "someone's current access level: 0_query"],
-        ["\\access quote someone -", "access denied"],
-      ], "someone"
-      b [
-        ["\\access quote someone", "someone's current access level: 0_query"],
-        ["\\access quote someone +", "someone's new access level: 1_add"],
-        ["\\access quote someone", "someone's current access level: 1_add"],
-        ["\\access quote someone -", "someone's new access level: 0_query"],
-        ["\\access quote someone", "someone's current access level: 0_query"],
-        ["\\access quote someone +", "someone's new access level: 1_add"],
-      ], "admin"
-      b [
-        ["\\access quote someone -", "access denied"],
-        ["\\access quote", "'s current access level: 1_add"],
-      ], "someone"
+      it "\\access #{cmd} set" do
+        File.write "db.yaml", YAML.dump({})
+        b [
+          ["\\access #{cmd} someone", "someone's current access level: 0 (#{l0})"],
+          ["\\access #{cmd} someone +", "someone's new access level: 1 (#{l1})"],
+          ["\\access #{cmd} someone", "someone's current access level: 1 (#{l1})"],
+          ["\\access #{cmd} someone -", "someone's new access level: 0 (#{l0})"],
+          ["\\access #{cmd} someone", "someone's current access level: 0 (#{l0})"],
+        ]
+        b [
+          ["\\access #{cmd} someone", "someone's current access level: 0 (#{l0})"],
+          ["\\access #{cmd} someone +", "access denied"],
+          ["\\access #{cmd} someone", "someone's current access level: 0 (#{l0})"],
+          ["\\access #{cmd} someone -", "access denied"],
+        ], "someone"
+        b [
+          ["\\access #{cmd} someone", "someone's current access level: 0 (#{l0})"],
+          ["\\access #{cmd} someone +", "someone's new access level: 1 (#{l1})"],
+          ["\\access #{cmd} someone", "someone's current access level: 1 (#{l1})"],
+          ["\\access #{cmd} someone -", "someone's new access level: 0 (#{l0})"],
+          ["\\access #{cmd} someone", "someone's current access level: 0 (#{l0})"],
+          ["\\access #{cmd} someone +", "someone's new access level: 1 (#{l1})"],
+        ], "admin"
+        b [
+          ["\\access #{cmd} someone -", "access denied"],
+          ["\\access #{cmd}", "'s current access level: 1 (#{l1})"],
+        ], "someone"
+      end
     end
 
     it "\\quote" do
@@ -111,7 +116,7 @@ describe "" do
         ["\\quote 4", "quote #4 not found"],
         ["\\quote del 3", "access denied"],
       ], "someone"
-      b [["\\access quote someone +", "someone's new access level: 1_add"]]
+      b [["\\access quote someone +", "someone's new access level: 1 (add)"]]
       b [
         ["\\quote add hello world", "quote #4 added"],
         ["\\quote 4", "#4: hello world"],
@@ -120,7 +125,7 @@ describe "" do
         ["\\quote 4", "quote #4 not found"],
         ["\\quote add hello world", "quote #5 added"],
       ], "someone"
-      b [["\\access quote someone -", "someone's new access level: 0_query"]]
+      b [["\\access quote someone -", "someone's new access level: 0 (query)"]]
       b [
         ["\\quote add hello world", "access denied"],
         ["\\quote del 5", "access denied"],
