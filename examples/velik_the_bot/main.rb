@@ -1,5 +1,9 @@
 # usage: bundle exec ruby main.rb <admin name> <channel name>
 
+# $ sudo apt-get install moreutils
+# $ tail -n 1000 processed.jsonl | sponge processed.jsonl
+
+
 require "trovobot"
 
 require "yaml/store"
@@ -41,6 +45,7 @@ TrovoBot.start do |chat, channel_id|   # this is designed for a multichannel bot
         next if "velik_the_bot" == chat[:nick_name]
         next TrovoBot::queue.push [chat[:content].tr("iI", "oO"), channel_id] if "ping" == chat[:content].downcase
         next TrovoBot::queue.push [chat[:content].tr("иИ", "оO"), channel_id] if "пинг" == chat[:content].downcase
+
         case chat[:content].strip
 
         when /\A\\#{re_help}\s+#{re_access}(\s|\z)/
@@ -50,10 +55,9 @@ TrovoBot.start do |chat, channel_id|   # this is designed for a multichannel bot
             "add/remove ability to add new quotes or initiate bets (only for channel owner and bot admin): \\access {quote,bet} <nickname> +/-",
             channel_id
           ]
-        when /\A\\#{re_access}\s+(#{re_quote}|#{re_bet})\z/
-          TrovoBot::queue.push ["#{chat[:nick_name]}'s current \\#{$1} access level: #{get_level[chat[:sender_id], channel_id, $1]}", channel_id]
-        when /\A\\#{re_access}\s+(#{re_quote}|#{re_bet})\s+(\S+)\z/
-          TrovoBot::queue.push ["#{$2}'s current \\#{$1} access level: #{get_level[TrovoBot::name_to_id($2), channel_id, $1]}", channel_id]
+        when /\A\\#{re_access}\s+(#{re_quote}|#{re_bet})(\s+(\S+))?\z/
+          (who, id) = $3 ? [$3, TrovoBot::name_to_id($3)] : [chat[:nick_name], chat[:sender_id]]
+          TrovoBot::queue.push ["#{who}'s current \\#{$1} access level: #{get_level[id, channel_id, $1]}", channel_id]
         when /\A\\#{re_access}\s+(#{re_quote}|#{re_bet})\s+(\S+)\s+([+-])\z/
           cmd, name, dir = $1, $2, $3
           next TrovoBot::queue.push ["access denied", channel_id] unless "8" <= get_level[chat[:sender_id], channel_id, cmd]
@@ -121,6 +125,7 @@ TrovoBot.start do |chat, channel_id|   # this is designed for a multichannel bot
 
         when /\A\\#{re_bet}\s+s(tart)?\s+(\S.*)\?\s*(\S+\s+\S)/
           question, words = $2, ($3+$').strip.split
+          next TrovoBot::queue.push ["duplicate variants", channel_id] if words.uniq!
           next TrovoBot::queue.push ["access denied", channel_id] unless "1" <= get_level[chat[:sender_id], channel_id, "bet"]
           result = db.transaction do |tr|
             next "there is ongoing betting" if tr.root? "bet.#{channel_id}"
@@ -133,10 +138,12 @@ TrovoBot.start do |chat, channel_id|   # this is designed for a multichannel bot
           result = db.transaction do |tr|
             next "there is no betting at the moment" unless tr.root? "bet.#{channel_id}"
             tr["bet.#{channel_id}"][:frozen] = true
-            p tr["bet.#{channel_id}"]
             "bets are made"
           end
           TrovoBot::queue.push [result, channel_id]
+        when /\A\\#{re_bet}\s+p(oints)?(\s+(\S+))?\z/
+          (who, id) = $3 ? [$3, TrovoBot::name_to_id($3)] : [chat[:nick_name], chat[:sender_id]]
+          TrovoBot::queue.push ["#{who} has #{db.transaction(true){ |tr| tr.fetch "bet.points.#{channel_id}.#{id}", 100 }} points for bets", channel_id]
         when /\A\\#{re_bet}\s+fin(ish)?\z/
           next TrovoBot::queue.push ["access denied", channel_id] unless "1" <= get_level[chat[:sender_id], channel_id, "bet"]
           result = db.transaction do |tr|

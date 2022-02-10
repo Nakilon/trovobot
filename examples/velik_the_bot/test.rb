@@ -138,9 +138,17 @@ describe "" do
     it "\\bet" do
       [nil, "admin"].each do |who|
         File.write "db.yaml", YAML.dump({})
-        b [
-          ["\\bet start will win? yes no", "access denied"],
-        ], "someone"
+        b [["\\bet points", " has 100 points for bets"]]
+        b [["\\bet points", " has 100 points for bets"]], "admin"
+        b [["\\bet points", " has 100 points for bets"]], "someone"
+        [nil, "admin", "someone"].each do |who|
+          b [
+            ["\\bet points owner", "owner has 100 points for bets"],
+            ["\\bet points admin", "admin has 100 points for bets"],
+            ["\\bet points someone", "someone has 100 points for bets"],
+          ], *who
+        end
+        b [["\\bet start will win? yes no", "access denied"]], "someone"
         b [
           ["yes", nil],
           ["\\bet freeze", "there is no betting at the moment"],
