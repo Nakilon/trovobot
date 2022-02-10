@@ -75,8 +75,8 @@ TrovoBot.start do |chat, channel_id|   # this is designed for a multichannel bot
             tr.roots.grep(/\Aquote\.#{channel_id}\./).map{ |id| [id.split(?.).last, tr[id]] }
           end.select(&:last).sample
           TrovoBot::queue.push [quote ? "##{i}: #{quote[:text]}" : "no quotes yet, go ahead and use '\\quote add <text>' to add some!", channel_id]
-        when /\A\\#{re_quote}\s+search\s+(\S.*?)\s*\z/
-          text = $1
+        when /\A\\#{re_quote}\s+s(earch)?\s+(\S.*?)\s*\z/
+          text = $2
           found = db.transaction(true) do |tr|
             tr.roots.grep(/\Aquote\.#{channel_id}\./).map{ |id| [id.split(?.).last, tr[id]] }
           end.select(&:last).select{ |i, q| q[:text][text] }
@@ -92,8 +92,8 @@ TrovoBot.start do |chat, channel_id|   # this is designed for a multichannel bot
           i = $1
           quote = db.transaction(true){ |tr| tr["quote.#{channel_id}.#{i}"] }
           TrovoBot::queue.push [quote ? "##{i}: #{quote[:text]}" : "quote ##{i} not found", channel_id]
-        when /\A\\#{re_quote}\s+add\s+(\S.*?)\s*\z/
-          text = $1
+        when /\A\\#{re_quote}\s+a(dd)?\s+(\S.*?)\s*\z/
+          text = $2
           next TrovoBot::queue.push ["access denied", channel_id] unless "1" <= get_level[chat[:sender_id], channel_id, "quote"]
           i = db.transaction do |tr|
             ((tr.roots.grep(/\Aquote\.#{channel_id}\./).map{ |_| _.split(?.).last.to_i }.max || 0) + 1).tap do |max|
@@ -101,8 +101,8 @@ TrovoBot.start do |chat, channel_id|   # this is designed for a multichannel bot
             end
           end
           TrovoBot::queue.push ["quote ##{i} added", channel_id]
-        when /\A\\#{re_quote}\s+del\s+(\d+)\z/
-          i = $1
+        when /\A\\#{re_quote}\s+d(el)?\s+(\d+)\z/
+          i = $2
           next TrovoBot::queue.push ["access denied", channel_id] unless "1" <= get_level[chat[:sender_id], channel_id, "quote"]
           result = db.transaction do |tr|
             next "quote ##{i} not found" unless quote = tr[root = "quote.#{channel_id}.#{i}"]
@@ -112,6 +112,38 @@ TrovoBot.start do |chat, channel_id|   # this is designed for a multichannel bot
           end
           TrovoBot::queue.push [result, channel_id]
 
+        when /\A\\#{re_help}(\s|\z)/
+          TrovoBot::queue.push [
+            "for help: \\help <command>; "\
+            "available commands: help, access, quote",
+            channel_id
+          ]
+
+        when /\A\\#{re_bet}\s+s(tart)?\s+(\S.*)\?\s*(\S+\s+\S)/
+          question, words = $2, ($3+$').strip.split
+          next TrovoBot::queue.push ["access denied", channel_id] unless "1" <= get_level[chat[:sender_id], channel_id, "bet"]
+          result = db.transaction do |tr|
+            next "there is ongoing betting" if tr.root? "bet.#{channel_id}"
+            tr["bet.#{channel_id}"] = {question: question, variants: words}
+            "#{question}? #{words.map{ |_| "'#{_}'" }.join " or "}"
+          end
+          TrovoBot::queue.push [result, channel_id]
+        when /\A\\#{re_bet}\s+fr(eeze)?\z/
+          next TrovoBot::queue.push ["access denied", channel_id] unless "1" <= get_level[chat[:sender_id], channel_id, "bet"]
+          result = db.transaction do |tr|
+            next "there is no betting at the moment" unless tr.root? "bet.#{channel_id}"
+            tr["bet.#{channel_id}"][:frozen] = true
+            p tr["bet.#{channel_id}"]
+            "bets are made"
+          end
+          TrovoBot::queue.push [result, channel_id]
+        when /\A\\#{re_bet}\s+fin(ish)?\z/
+          next TrovoBot::queue.push ["access denied", channel_id] unless "1" <= get_level[chat[:sender_id], channel_id, "bet"]
+          result = db.transaction do |tr|
+            next "there is no betting at the moment" unless tr.root? "bet.#{channel_id}"
+            ""
+          end
+          TrovoBot::queue.push [result, channel_id]
         # bet start
         # bet finish
         # bet yes
@@ -119,13 +151,6 @@ TrovoBot.start do |chat, channel_id|   # this is designed for a multichannel bot
         # bet freeze
         # bet revert
         # bet cancel = finish + revert
-
-        when /\A\\#{re_help}(\s|\z)/
-          TrovoBot::queue.push [
-            "for help: \\help <command>; "\
-            "available commands: help, access, quote",
-            channel_id
-          ]
 
         end
       end

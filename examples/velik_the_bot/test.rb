@@ -135,6 +135,31 @@ describe "" do
       b [["\\quote del 5", "quote #5 deleted"]]
     end
 
+    it "\\bet" do
+      [nil, "admin"].each do |who|
+        File.write "db.yaml", YAML.dump({})
+        b [
+          ["\\bet start will win? yes no", "access denied"],
+        ], "someone"
+        b [
+          ["yes", nil],
+          ["\\bet freeze", "there is no betting at the moment"],
+          ["\\bet finish", "there is no betting at the moment"],
+          ["\\bet start will win?", nil],
+          ["\\bet start will win yes no", nil],
+          ["\\bet start will win? yes no", "will win? 'yes' or 'no'"],
+          ["\\bet start will win? yes no", "there is ongoing betting"],
+          ["\\bet freeze", "bets are made"],
+          ["\\bet finish", ""],
+        ], *who
+        b [["\\access bet someone +", "someone's new \\bet access level: 1 (initiate)"]]
+        b [
+          ["\\bet finish", ""],
+          ["\\bet start will win? yes no", "will win? 'yes' or 'no'"],
+        ], "someone"
+      end
+    end
+
     # it "\\bet" do
     #   bet start
     #   bet finish
