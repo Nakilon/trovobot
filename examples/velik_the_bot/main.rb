@@ -144,22 +144,36 @@ TrovoBot.start do |chat, channel_id|   # this is designed for a multichannel bot
         when /\A\\#{re_bet}\s+p(oints)?(\s+(\S+))?\z/
           (who, id) = $3 ? [$3, TrovoBot::name_to_id($3)] : [chat[:nick_name], chat[:sender_id]]
           TrovoBot::queue.push ["#{who} has #{db.transaction(true){ |tr| tr.fetch "bet.points.#{channel_id}.#{id}", 100 }} points for bets", channel_id]
-        when /\A\\#{re_bet}\s+fin(ish)?\z/
+        when /\A\\#{re_bet}\s+fin(ish)?\s+(\S+)(\s|\z)/
           next TrovoBot::queue.push ["access denied", channel_id] unless "1" <= get_level[chat[:sender_id], channel_id, "bet"]
           result = db.transaction do |tr|
             next "there is no betting at the moment" unless tr.root? "bet.#{channel_id}"
-            ""
+            if result = db.transaction(true) do |tr|
+              next "" unless tr.fetch("bet.#{channel_id}", {}).fetch(:variants, []).include?(bet)
+              next "#{who}, you have not enough points" unless bet <= tr.fetch("bet.#{channel_id}.#{chat[:sender_id]}", 100)
+            end
           end
           TrovoBot::queue.push [result, channel_id]
-        # bet start
-        # bet finish
-        # bet yes
-        # bet no
-        # bet freeze
+        when /\A(\S+)\s+(\d+)\z/
+          word, bet = $1, $2.to_i
+          if result = db.transaction(true) do |tr|
+            next "" unless tr.fetch("bet.#{channel_id}", {}).fetch(:variants, []).include?(bet)
+            next "#{who}, you have not enough points" unless bet <= tr.fetch("bet.#{channel_id}.#{chat[:sender_id]}", 100)
+          end
+            TrovoBot::queue.push ["there is no betting at the moment", channel_id] unless result.empty?
+            next
+          end
+          db.transaction do |tr|
+            tr["bet.current.#{channel_id}"] ||= []
+            tr["bet.current.#{channel_id}"].push [chat[:sender_id], word, bet]
+            tr["bet.points.#{channel_id}.#{id}"] -= bet
+          end
+
         # bet revert
         # bet cancel = finish + revert
 
         end
+
       end
 
 end

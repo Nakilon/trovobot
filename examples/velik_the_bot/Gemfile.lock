@@ -1,3 +1,11 @@
+PATH
+  remote: ../..
+  specs:
+    trovobot (0.1.2)
+      async-http
+      async-websocket
+      nethttputils (~> 0.4.3.2)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -24,7 +32,13 @@ GEM
       protocol-websocket (~> 0.7.0)
     console (1.14.0)
       fiber-local
+    crack (0.4.5)
+      rexml
     fiber-local (1.0.0)
+    hashdiff (1.0.1)
+    minitest (5.15.0)
+    minitest-around (0.5.0)
+      minitest (~> 5.0)
     nethttputils (0.4.3.2)
       addressable
     nio4r (2.5.8)
@@ -39,17 +53,20 @@ GEM
       protocol-http (~> 0.2)
       protocol-http1 (~> 0.2)
     public_suffix (4.0.6)
+    rexml (3.2.5)
     timers (4.3.3)
-    trovobot (0.1.1)
-      async-http
-      async-websocket
-      nethttputils (~> 0.4.3.2)
+    webmock (3.14.0)
+      addressable (>= 2.8.0)
+      crack (>= 0.3.2)
+      hashdiff (>= 0.4.0, < 2.0.0)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  trovobot
+  minitest-around
+  trovobot (~> 0.1.1)!
+  webmock
 
 BUNDLED WITH
    2.2.22

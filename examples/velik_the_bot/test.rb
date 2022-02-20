@@ -152,31 +152,27 @@ describe "" do
         b [
           ["yes", nil],
           ["\\bet freeze", "there is no betting at the moment"],
-          ["\\bet finish", "there is no betting at the moment"],
+          ["\\bet finish yes", "there is no betting at the moment"],
           ["\\bet start will win?", nil],
           ["\\bet start will win yes no", nil],
           ["\\bet start will win? yes no", "will win? 'yes' or 'no'"],
           ["\\bet start will win? yes no", "there is ongoing betting"],
+          ["yes 10", nil],
+          ["yes 100", nil],
           ["\\bet freeze", "bets are made"],
-          ["\\bet finish", ""],
+          ["\\bet finish", nil],
+          ["\\bet finish finish", "finish with 'yes' or 'no'"],
         ], *who
         b [["\\access bet someone +", "someone's new \\bet access level: 1 (initiate)"]]
         b [
-          ["\\bet finish", ""],
+          ["\\bet finish yes", ""],
           ["\\bet start will win? yes no", "will win? 'yes' or 'no'"],
         ], "someone"
       end
     end
 
-    # it "\\bet" do
-    #   bet start
-    #   bet finish
-    #   bet yes
-    #   bet no
-    #   bet freeze
     #   bet revert
     #   bet cancel = finish + revert
-    # end
 
   end
 
